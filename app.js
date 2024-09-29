@@ -47,8 +47,7 @@ app.post(`${api}/products/`, (req, res) => {
 });
 
 mongoose.connect(process.env.CONNECTION_STRING)
-    .then(() =>
-        console.log("database connection successful!"))
+    .then(() => console.log("Database connection successful!"))
     .catch((err) => console.log(err))
 
 app.listen(PORT, () => {
