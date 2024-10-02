@@ -1,11 +1,18 @@
 const express = require('express');
-const {
-    getPersonalizedRecommendations,
-} = require('../controllers/RecommendationController');
-
 const router = express.Router();
+const {
+    createRecommendation,
+    getUserRecommendations,
+    getRecommendationById,
+    updateRecommendation,
+    deleteRecommendation
+} = require('../controllers/recommendationController');
 
 // Recommendation routes
-router.get('/:userId', getPersonalizedRecommendations); // Get personalized recommendations for user
+router.post('/', createRecommendation); // Create a new recommendation
+router.get('/user/:userId', getUserRecommendations); // Get all recommendations for a user
+router.get('/:recommendationId', getRecommendationById); // Get recommendation by ID
+router.put('/:recommendationId', updateRecommendation); // Update recommendation
+router.delete('/:recommendationId', deleteRecommendation); // Delete recommendation
 
 module.exports = router;

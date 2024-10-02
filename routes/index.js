@@ -9,6 +9,7 @@ const recommendationRoutes = require('./recommendationRoutes');
 
 const router = express.Router();
 
+// Mount each route on its respective path
 router.use('/users', userRoutes);
 router.use('/products', productRoutes);
 router.use('/brands', brandRoutes);
