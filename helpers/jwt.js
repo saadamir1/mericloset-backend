@@ -6,8 +6,7 @@ function authJwt() {
     return jwt({
         secret,
         algorithms: ['HS256'],
-        //isRevoked: isRevoked
-
+        isRevoked: isRevoked
     }).unless({
         path: [
             { url: /\/api\/v1\/products(.*)/, methods: ['GET', 'OPTIONS'] },
@@ -15,14 +14,29 @@ function authJwt() {
             '/api/v1/users/login',
             '/api/v1/users/register'
         ]
-    })
+    });
 }
 
-// async function isRevoked(req, payload, done) {
-//     if (payload.role != "user") {
-//         done(null, true);
-//     }
-//     done();
-// }
+async function isRevoked(req, payload, done) {
+    try {
+        //console.log("Payload:", payload);
 
-module.exports = authJwt; 
+        if (!payload || !payload.payload.role) {
+            console.log("No role found in payload. Revoking access.");
+            return true;
+        }
+
+        if (payload.payload.role === "user") {
+            console.log("User role detected. Revoking access.");
+            return true;
+        }
+
+        console.log("Access granted for role:", payload.payload.role);
+        return false; // Allow access for others
+    } catch (error) {
+        console.error('Error in isRevoked:', error);
+    }
+}
+
+
+module.exports = authJwt;
