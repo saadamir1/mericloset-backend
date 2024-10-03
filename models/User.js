@@ -32,7 +32,18 @@ const userSchema = new mongoose.Schema({
         products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
         dateCompared: { type: Date, default: Date.now }
     }],
-    isAdmin: { type: Boolean, default: false }
+    role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' }
+
+});
+
+// Virtual field to create 'id' based on '_id'
+userSchema.virtual('id').get(function () {
+    return this._id.toHexString(); // Convert _id to a string
+});
+
+// Ensure virtual fields are included when converting to JSON
+userSchema.set('toJSON', {
+    virtuals: true
 });
 
 const User = mongoose.model('User', userSchema);

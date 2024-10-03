@@ -1,3 +1,4 @@
+require('dotenv/config');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -5,12 +6,15 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const errorHandler = require('./middleware/errorHandler');
 const routes = require('./routes/index');
+const authJwt = require('./helpers/jwt')
+const errorhandler = require('./helpers/error-handler')
 
 // Middleware
 app.use(bodyParser.json());
 app.use(morgan('tiny'));
+app.use(authJwt());
+app.use(errorhandler);
 
-require('dotenv/config');
 const api = process.env.API_URL;
 
 const PORT = process.env.PORT || 5170;

@@ -1,10 +1,18 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Register a new user
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
     try {
-        const newUser = new User({ name, email, passwordHash: password }); // You should hash the password before saving
+        // Check if the email is already registered
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already registered' });
+        }
+        const passwordHash = bcrypt.hashSync(password, 10);
+        const newUser = new User({ name, email, passwordHash });
         await newUser.save();
         res.status(201).json({ message: 'User registered successfully', user: newUser });
     } catch (error) {
@@ -12,10 +20,40 @@ const registerUser = async (req, res) => {
         res.status(500).json({ message: 'Error registering user' });
     }
 };
+
+// Login user
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: 'User does not exist' });
+        }
+
+        // Compare the password with the hashed password
+        const isMatch = bcrypt.compareSync(password, user.passwordHash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        // Generate a JWT token after confirming the password
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ message: 'Login successful', user: { email: user.email }, token });
+    } catch (error) {
+        console.error('Error logging in user:', error);
+        res.status(500).json({ message: 'Error logging in user' });
+    }
+};
+
+
+
 // Fetch all users
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-passwordHash'); // Exclude passwordHash from the response
+        const users = await User.find(); //for long user list, we can display only specific fields i.e name and email 
         res.status(200).json(users);
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -50,9 +88,9 @@ const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Optionally, handle password update (hashing before saving)
+        //handle password update
         if (updates.password) {
-            updates.passwordHash = updates.password; // You should hash this before saving
+            updates.passwordHash = bcrypt.hashSync(updates.password, 10); //hash this before saving
             delete updates.password; // Remove plaintext password before saving
         }
 
@@ -88,4 +126,5 @@ module.exports = {
     updateUser,
     deleteUser,
     getAllUsers,
+    loginUser,
 };
