@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
+    username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
     measurements: [{
@@ -33,7 +34,9 @@ const userSchema = new mongoose.Schema({
         products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
         dateCompared: { type: Date, default: Date.now }
     }],
-    role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' }
+    role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' },
+    gender: { type: String, enum: ['male', 'female', 'non-binary', 'other'] },
+    age: { type: Number, min: 0 }
 
 });
 

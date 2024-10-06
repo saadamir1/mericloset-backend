@@ -11,9 +11,13 @@ const registerUser = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ message: 'Email already registered' });
         }
+
+        // Extract username from email
+        const username = email.split('@')[0]; // Get the part before '@'
         const passwordHash = bcrypt.hashSync(password, 10);
+
         // Create a new User instance with firstName and lastName
-        const newUser = new User({ firstName, lastName, email, passwordHash });
+        const newUser = new User({ firstName, lastName, email, passwordHash, username });
         await newUser.save();
         res.status(201).json({ message: 'User registered successfully', user: newUser });
     } catch (error) {
@@ -42,7 +46,7 @@ const loginUser = async (req, res) => {
         // Generate a JWT token after confirming the password
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.status(200).json({ message: 'Login successful', user: { email: user.email }, token });
+        res.status(200).json({ message: 'Login successful', user: { firstName: user.firstName, lastName: user.lastName, username: user.username, email: user.email }, token });
     } catch (error) {
         console.error('Error logging in user:', error);
         res.status(500).json({ message: 'Error logging in user' });
