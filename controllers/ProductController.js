@@ -14,16 +14,27 @@ const createProduct = async (req, res) => {
     }
 };
 
-// Get all products
+// Get all products with pagination
 const getAllProducts = async (req, res) => {
+    const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
+    const limit = parseInt(req.query.limit) || 10; // Get limit from query, default to 10
+    const skip = (page - 1) * limit; // Calculate the number of items to skip
+
     try {
-        const products = await Product.find();
-        res.status(200).json(products);
+        const totalCount = await Product.countDocuments(); // Get total count of products
+        const products = await Product.find().skip(skip).limit(limit); // Fetch products with pagination
+
+        res.status(200).json({
+            count: totalCount,
+            next: totalCount > page * limit ? `/api/v1/products?page=${page + 1}&limit=${limit}` : null,
+            results: products,
+        });
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ message: 'Error fetching products' });
     }
 };
+
 
 // Get product by ID
 const getProductById = async (req, res) => {
