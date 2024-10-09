@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
 
 const lookbookSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    title: { type: String, required: true },
+    description: { type: String },
     products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    dateCreated: { type: Date, default: Date.now },
-    description: String
+    tags: [String],
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+
 });
 
 const Lookbook = mongoose.model('Lookbook', lookbookSchema);

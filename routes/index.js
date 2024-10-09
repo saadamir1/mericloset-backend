@@ -7,6 +7,7 @@ const closetItemRoutes = require('./closetItemRoutes');
 const trackingRoutes = require('./trackingRoutes');
 const recommendationRoutes = require('./recommendationRoutes');
 const uploadRoutes = require('./uploadRoutes');
+const categoryRoutes = require('./categoryRoutes');
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use('/closet-items', closetItemRoutes);
 router.use('/tracking', trackingRoutes);
 router.use('/recommendations', recommendationRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/api/categories', categoryRoutes);
 
 module.exports = router;

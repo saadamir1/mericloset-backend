@@ -6,9 +6,12 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
-    measurements: [{
-        type: mongoose.Schema.Types.Mixed, // You can define specific measurement details
-    }],
+    measurements: {
+        height: { type: Number },
+        weight: { type: Number },
+        chest: { type: Number },
+        waist: { type: Number },
+    },
     preferences: {
         style: { type: String },
         sustainability: { type: Boolean },
@@ -17,26 +20,17 @@ const userSchema = new mongoose.Schema({
         favoriteBrands: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Brand' }],
         fitPreference: { type: String }
     },
-    closet: [{
-        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-        dateAdded: { type: Date, default: Date.now },
-        customNotes: String
-    }],
-    lookbooks: [{
-        name: { type: String },
-        products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
-        dateCreated: { type: Date, default: Date.now }
-    }],
-    savedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
-    viewedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
-    personalizedRecommendations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    lookbooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lookbook' }],
+    closets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Closet' }],
     comparisonLists: [{
         products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
         dateCompared: { type: Date, default: Date.now }
     }],
     role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' },
     gender: { type: String, enum: ['male', 'female', 'non-binary', 'other'] },
-    age: { type: Number, min: 0 }
+    age: { type: Number, min: 0 },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
 
 });
 
