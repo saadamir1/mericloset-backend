@@ -8,6 +8,7 @@ const trackingRoutes = require('./trackingRoutes');
 const recommendationRoutes = require('./recommendationRoutes');
 const uploadRoutes = require('./uploadRoutes');
 const categoryRoutes = require('./categoryRoutes');
+const adminRoutes = require('./adminRoutes');
 
 const router = express.Router();
 
@@ -18,7 +19,8 @@ router.use('/closets', closetRoutes);
 router.use('/closet-items', closetItemRoutes);
 router.use('/tracking', trackingRoutes);
 router.use('/recommendations', recommendationRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/admin', adminRoutes);
 router.use('/upload', uploadRoutes);
-router.use('/api/categories', categoryRoutes);
 
 module.exports = router;

@@ -17,7 +17,7 @@ const createProduct = async (req, res) => {
 // Get all products with pagination
 const getAllProducts = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
-    const limit = parseInt(req.query.limit) || 10; // Get limit from query, default to 10
+    const limit = parseInt(req.query.limit) || 74; // Get limit from query, default to 10
     const skip = (page - 1) * limit; // Calculate the number of items to skip
 
     try {

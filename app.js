@@ -15,7 +15,7 @@ const corsOrigin = process.env.CORS_ORIGIN
 app.use(cors({ origin: corsOrigin })); // only allow API requests from our frontend's specific port
 app.use(bodyParser.json());
 app.use(morgan('tiny'));
-app.use(authJwt());
+//app.use(authJwt());
 app.use(errorhandler);
 
 // Other middlewares for handling form submissions

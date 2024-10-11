@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const xlsx = require('xlsx');
-const Product = require('../models/Product'); // Adjust the path if necessary
+const Product = require('../models/Product');
 
 const router = express.Router();
 const upload = multer({ dest: 'upload/' }); // Directory to save uploaded files

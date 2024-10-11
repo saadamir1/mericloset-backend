@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
         favoriteBrands: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Brand' }],
         fitPreference: { type: String }
     },
-    lookbooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lookbook' }],
+    //lookbooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lookbook' }],
     closets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Closet' }],
     comparisonLists: [{
         products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],

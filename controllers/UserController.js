@@ -44,7 +44,7 @@ const loginUser = async (req, res) => {
         }
 
         // Generate a JWT token after confirming the password
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({ message: 'Login successful', user: { firstName: user.firstName, lastName: user.lastName, username: user.username, email: user.email }, token });
     } catch (error) {
@@ -85,7 +85,7 @@ const getUserDetails = async (req, res) => {
 // Update user details
 const updateUser = async (req, res) => {
     const { userId } = req.params;
-    const updates = req.body; // Use only the fields you want to update
+    const updates = req.body; // Use only the fields we want to update
 
     try {
         const user = await User.findById(userId);
