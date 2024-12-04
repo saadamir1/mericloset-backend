@@ -3,6 +3,10 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const multer = require('multer');
 const xlsx = require('xlsx');
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
+const crypto = require('crypto');
+
 
 // Create a new brand (Admin operation)
 exports.createBrandAdmin = async (req, res) => {
@@ -27,39 +31,45 @@ exports.deleteBrandAdmin = async (req, res) => {
     }
 };
 
+// Upload product sheet (Admin operation)
 exports.uploadProductSheet = async (req, res) => {
-    //console.log('Upload endpoint hit');
-    //console.log('Request file:', req.file); // Log the uploaded file info
-
     try {
-        const file = req.file; // Access the uploaded file
+        const file = req.file;
         if (!file) {
             console.error('No file uploaded');
             return res.status(400).send('No file uploaded.');
         }
+
         const workbook = xlsx.readFile(file.path);
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
 
         // Convert sheet to JSON
         const jsonData = xlsx.utils.sheet_to_json(worksheet);
-        //console.log('Parsed JSON Data (First 5 entries):', JSON.stringify(jsonData.slice(0, 5), null, 2));
 
         // Map JSON data to products
-        const products = jsonData.map((item) => ({
-            title: item.title || '',
-            //productId: item.productID || '',
-            category: item.category || '',
-            gender: item.gender || '',
-            sizes: (item.sizes && typeof item.sizes === 'string') ? item.sizes.split(',') : [],
-            fitType: item.fitType || '',
-            colors: (item.colors && typeof item.colors === 'string') ? item.colors.split(',') : [],
-            price: item.price ? parseFloat(item.price) : 0,
-            description: item.description || '',
-            brand: item.brand && item.brand.trim() ? item.brand : 'Unknown Brand',
-            images: (item.images && typeof item.images === 'string') ? [item.images] : [],
-        }));
+        const products = jsonData.map((item) => {
+            const brandPrefix = item.brand ? item.brand.slice(0, 2).toUpperCase() : 'XX';
+            const generatedId = new ObjectId(); // Generate a new ObjectId manually
+            const hash = crypto.createHash('sha256').update(generatedId.toString()).digest('hex').slice(0, 8); // Shorten hash for readability
 
+            return {
+                title: item.title || '',
+                category: item.category || '',
+                gender: item.gender || '',
+                sizes: (item.sizes && typeof item.sizes === 'string') ? item.sizes.split(',') : [],
+                fitType: item.fitType || '',
+                colors: (item.colors && typeof item.colors === 'string') ? item.colors.split(',') : [],
+                price: item.price ? parseFloat(item.price) : 0,
+                description: item.description || '',
+                brand: item.brand && item.brand.trim() ? item.brand : 'Unknown Brand',
+                images: (item.images && typeof item.images === 'string') ? [item.images] : [],
+                productId: `${brandPrefix}_${hash}`, // Use hash-based productId
+                _id: generatedId, // Use the same generated ObjectId for MongoDB insertion
+            };
+        });
+
+        // Bulk insert products
         await Product.insertMany(products);
         res.status(200).send('Products successfully imported.');
     } catch (error) {
@@ -67,6 +77,8 @@ exports.uploadProductSheet = async (req, res) => {
         res.status(500).send('Error importing products.');
     }
 };
+
+
 
 // Get all users (Admin operation)
 exports.getAllUsersAdmin = async (req, res) => {
@@ -88,5 +100,3 @@ exports.deleteUserAdmin = async (req, res) => {
         return res.status(500).json({ message: 'Error deleting user', error: error.message });
     }
 };
-
-

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
     title: { type: String, required: true }, // Example: 'Navy Blue Shalwar Kameez'
     brand: { type: String, required: true, default: 'Unknown Brand' }, // Example: 'J.'
-    productId: { type: String, required: true }, // Example: 'JSMK12345'
+    productId: { type: String }, // Example: 'JSMK12345'
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     sizes: [{ type: String, required: true }], // Example: ['M', 'L', 'XL', 'XXL']
     fitType: { type: String, required: true }, // Example: 'Regular Fit'
