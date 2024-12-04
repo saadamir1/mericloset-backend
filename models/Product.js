@@ -29,9 +29,10 @@ const productSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+// Indexing
 productSchema.index({ productId: 1, brand: 1 }, { unique: true });
-productSchema.index({ category: 1, gender: 1, price: 1 });
-productSchema.index({ title: 'text', price: 1 });
+productSchema.index({ category: 1, price: 1 });
+productSchema.index({ title: 'text', tags: 'text' });
 
 // Virtual field to create 'id' based on '_id'
 productSchema.virtual('id').get(function () {
