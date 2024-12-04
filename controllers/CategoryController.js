@@ -15,6 +15,7 @@ const createCategory = async (req, res) => {
     const { name, parentCategory, subcategories } = req.body;
 
     try {
+        // Create the new category
         const newCategory = new Category({
             name,
             parentCategory,
@@ -22,6 +23,14 @@ const createCategory = async (req, res) => {
         });
 
         await newCategory.save();
+
+        // If there's a parent category, update it with the new subcategory ID
+        if (parentCategory) {
+            await Category.findByIdAndUpdate(parentCategory, {
+                $push: { subcategories: newCategory._id }
+            });
+        }
+
         res.status(201).json(newCategory);
     } catch (error) {
         console.error('Error creating category:', error);
@@ -68,6 +77,14 @@ const deleteCategory = async (req, res) => {
         if (!deletedCategory) {
             return res.status(404).json({ message: 'Category not found' });
         }
+
+        // If there are any parent categories, remove the deleted category from their subcategories
+        if (deletedCategory.parentCategory) {
+            await Category.findByIdAndUpdate(deletedCategory.parentCategory, {
+                $pull: { subcategories: deletedCategory._id }
+            });
+        }
+
         res.status(204).send(); // No content to send back
     } catch (error) {
         console.error('Error deleting category:', error);
