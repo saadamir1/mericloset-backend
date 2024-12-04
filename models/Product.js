@@ -4,9 +4,7 @@ const productSchema = new mongoose.Schema({
     title: { type: String, required: true }, // Example: 'Navy Blue Shalwar Kameez'
     brand: { type: String, required: true, default: 'Unknown Brand' }, // Example: 'J.'
     productId: { type: String, required: true }, // Example: 'JSMK12345'
-    //category: { type: String, required: true }, // Example: 'Shalwar Kameez'
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-    //gender: { type: String, required: true, enum: ['Mens', 'Womens', 'Kids'] }, // Example: 'Mens'
     sizes: [{ type: String, required: true }], // Example: ['M', 'L', 'XL', 'XXL']
     fitType: { type: String, required: true }, // Example: 'Regular Fit'
     colors: [{ type: String, required: true }], // Example: ['Navy Blue', 'Cream', 'Black']
@@ -25,11 +23,15 @@ const productSchema = new mongoose.Schema({
     occasion: { type: String }, // Example: 'Formal'
     description: { type: String }, // Example: 'Elegant navy blue shalwar kameez for formal occasions.'
     scrapedAt: { type: Date, default: Date.now },
-    //type: { type: String, required: true, enum: ['Cloth', 'Shawl', 'Other'], default: 'Cloth' } // Example: 'Cloth'
+
+    tags: [{ type: String }], // Product tags for content-based filtering
+    popularityIndex: { type: Number, default: 0 }, // Useful for collaborative filtering
+
 }, { timestamps: true });
 
 productSchema.index({ productId: 1, brand: 1 }, { unique: true });
 productSchema.index({ category: 1, gender: 1, price: 1 });
+productSchema.index({ title: 'text', price: 1 });
 
 // Virtual field to create 'id' based on '_id'
 productSchema.virtual('id').get(function () {

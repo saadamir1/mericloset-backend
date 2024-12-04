@@ -6,7 +6,7 @@ const closetItemSchema = new mongoose.Schema({
     dateAdded: { type: Date, default: Date.now },
     customNotes: { type: String, default: '' },
     tags: [{ type: String }], // Optional tags for categorization
-    quantity: { type: Number, default: 1 } // To allow for tracking multiple quantities of the same item
+    quantity: { type: Number, default: 1 }
 });
 
 const ClosetItem = mongoose.model('ClosetItem', closetItemSchema);
