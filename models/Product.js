@@ -19,10 +19,8 @@ const productSchema = new mongoose.Schema({
     },
     stockStatus: { type: String }, // Example: 'In Stock'
     images: [{ type: String, required: true }], // Example: ['j_shalwar_kameez1.jpg', 'j_shalwar_kameez2.jpg']
-    productUrl: { type: String }, // Example: 'http://example.com/product/JSMK12345'
     occasion: { type: String }, // Example: 'Formal'
     description: { type: String }, // Example: 'Elegant navy blue shalwar kameez for formal occasions.'
-    scrapedAt: { type: Date, default: Date.now },
 
     tags: [{ type: String }], // Product tags for content-based filtering
     popularityIndex: { type: Number, default: 0 }, // Useful for collaborative filtering

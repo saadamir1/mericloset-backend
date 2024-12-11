@@ -1,8 +1,25 @@
 const Product = require('../models/Product');
 
+// Helper function to process image URLs into an array
+const processImages = (imageData) => {
+    if (typeof imageData === 'string') {
+        // Remove single quotes and split by commas to get individual URLs
+        return imageData
+            .replace(/'/g, '')          // Remove single quotes
+            .split(',')                 // Split by commas to get individual URLs
+            .map(url => url.trim());    // Trim any leading/trailing whitespace from each URL
+    }
+    return imageData; // If imageData is already an array, return it as is
+};
+
 // Create a new product
 const createProduct = async (req, res) => {
-    const productData = req.body;
+    let productData = req.body;
+
+    // Ensure images are processed correctly if provided
+    if (productData.images) {
+        productData.images = processImages(productData.images);
+    }
 
     try {
         const newProduct = new Product(productData);
@@ -17,7 +34,7 @@ const createProduct = async (req, res) => {
 // Get all products with pagination
 const getAllProducts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 74;
+    const limit = parseInt(req.query.limit) || 36;
     const skip = (page - 1) * limit;
 
     try {
@@ -36,8 +53,6 @@ const getAllProducts = async (req, res) => {
         res.status(500).json({ message: "Error fetching products" });
     }
 };
-
-
 
 // Get product by ID
 const getProductById = async (req, res) => {
@@ -58,7 +73,12 @@ const getProductById = async (req, res) => {
 // Update product by ID
 const updateProduct = async (req, res) => {
     const { productId } = req.params;
-    const updateData = req.body;
+    let updateData = req.body;
+
+    // Ensure images are processed correctly if provided
+    if (updateData.images) {
+        updateData.images = processImages(updateData.images);
+    }
 
     try {
         const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });

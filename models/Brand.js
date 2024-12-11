@@ -8,10 +8,6 @@ const brandSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     popularityIndex: { type: Number, default: 0 },
     slug: { type: String, required: true, unique: true }, // Add slug field
-    categories: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category'
-    }],
 });
 
 // Virtual field to ensure compatibility with frontend expectations

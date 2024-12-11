@@ -1,15 +1,54 @@
 const Category = require('../models/Category');
 
 // Controller functions
+
+// Recursive function to structure categories into hierarchy
+const buildCategoryHierarchy = async (categories) => {
+    // Create a map of categories by their ID
+    const categoryMap = categories.reduce((acc, category) => {
+        acc[category._id] = category;
+        return acc;
+    }, {});
+
+    // Add subcategories to their parent categories
+    const hierarchy = categories.filter((category) => {
+        if (category.parentCategory) {
+            const parent = categoryMap[category.parentCategory];
+            if (parent) {
+                parent.subcategories = parent.subcategories || [];
+                parent.subcategories.push(category);
+                return false; // Don't include the category at the top level
+            }
+        }
+        return true; // Keep top-level categories
+    });
+
+    return hierarchy;
+};
+
 const getAllCategories = async (req, res) => {
     try {
-        const categories = await Category.find();
+        // Fetch categories and populate subcategories recursively
+        const categories = await Category.find().populate({
+            path: 'subcategories',
+            model: Category,
+            populate: {
+                path: 'subcategories',  // Nested subcategories
+                model: Category,
+                populate: {
+                    path: 'subcategories',
+                    model: Category
+                }
+            }
+        });
+
         res.status(200).json(categories);
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).json({ message: 'Error fetching categories' });
     }
 };
+
 
 const createCategory = async (req, res) => {
     const { name, parentCategory, subcategories } = req.body;
