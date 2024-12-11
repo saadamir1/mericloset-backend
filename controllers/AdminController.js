@@ -63,7 +63,9 @@ exports.uploadProductSheet = async (req, res) => {
                 price: item.price ? parseFloat(item.price) : 0,
                 description: item.description || '',
                 brand: item.brand && item.brand.trim() ? item.brand : 'Unknown Brand',
-                images: (item.images && typeof item.images === 'string') ? [item.images] : [],
+                images: (item.images && typeof item.images === 'string')
+                    ? JSON.parse(item.images.replace(/'/g, '"'))
+                    : [],
                 productId: `${brandPrefix}_${hash}`, // Use hash-based productId
                 _id: generatedId, // Use the same generated ObjectId for MongoDB insertion
             };
