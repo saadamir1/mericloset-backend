@@ -31,18 +31,74 @@ const createProduct = async (req, res) => {
     }
 };
 
-// Get all products with pagination
 const getAllProducts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 36;
     const skip = (page - 1) * limit;
+    const { categoryID, brandID, sortOrder, minPrice, maxPrice } = req.query; // Accepting more filter params (like minPrice, maxPrice)
+    console.log("Request Query Params:", req.query);
+
+    // Build the filter object dynamically
+    let filter = {};
+
+    if (categoryID) {
+        filter.category = categoryID;  // Filter by category if present
+    }
+
+    if (brandID) {
+        filter.brand = brandID;  // Filter by brand if present
+    }
+
+    // Adding price filters (if minPrice and maxPrice are provided)
+    if (minPrice && maxPrice) {
+        filter.price = { $gte: minPrice, $lte: maxPrice };  // Price range filter
+    } else if (minPrice) {
+        filter.price = { $gte: minPrice };  // Only minimum price filter
+    } else if (maxPrice) {
+        filter.price = { $lte: maxPrice };  // Only maximum price filter
+    }
+
+    // Log the filter object to check.
+    console.log("Filter:", filter);
+
+    // Default sort is by relevance, handle other sorting options
+    let sort = {};
+    switch (sortOrder) {
+        case "name":
+            sort = { name: 1 }; // Sort by name A-Z
+            break;
+        case "-name":
+            sort = { name: -1 }; // Sort by name Z-A
+            break;
+        case "price":
+            sort = { price: 1 }; // Sort by price low to high
+            break;
+        case "-price":
+            sort = { price: -1 }; // Sort by price high to low
+            break;
+        case "-added":
+            sort = { addedDate: -1 }; // Sort by date added, descending
+            break;
+        case "-metacritic":
+            sort = { popularity: -1 }; // Sort by popularity (metacritic score)
+            break;
+        case "-rating":
+            sort = { rating: -1 }; // Sort by average rating, descending
+            break;
+        default:
+            sort = {}; // Default to no sorting (relevance)
+            break;
+    }
+
+    console.log("Sort:", sort);
 
     try {
-        const totalCount = await Product.countDocuments().catch(err => {
-            console.error("Count operation failed:", err);
-            throw new Error("Count operation timed out");
-        });
-        const products = await Product.find().skip(skip).limit(limit);
+        const totalCount = await Product.countDocuments(filter);  // Apply filter to count
+        const products = await Product.find(filter)  // Apply filter to query
+            .skip(skip)
+            .limit(limit)
+            .sort(sort);  // Apply sorting
+
         res.status(200).json({
             count: totalCount,
             next: totalCount > page * limit ? `/api/v1/products?page=${page + 1}&limit=${limit}` : null,
@@ -53,6 +109,8 @@ const getAllProducts = async (req, res) => {
         res.status(500).json({ message: "Error fetching products" });
     }
 };
+
+
 
 // Get product by ID
 const getProductById = async (req, res) => {
