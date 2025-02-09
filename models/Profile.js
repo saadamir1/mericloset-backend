@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const profileSchema = new mongoose.Schema({
+    firstName: { type: String },
+    lastName: { type: String },
+    gender: { type: String, enum: ['male', 'female', 'non-binary', 'other', ''] },
+    age: { type: Number, min: 0 },
     measurements: {
         height: { type: Number },
         weight: { type: Number },
@@ -16,3 +20,6 @@ const profileSchema = new mongoose.Schema({
         fitPreference: { type: String }
     },
 });
+const Profile = mongoose.model('Profile', profileSchema);
+module.exports = Profile;
+
