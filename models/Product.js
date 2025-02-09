@@ -6,8 +6,8 @@ const productSchema = new mongoose.Schema({
     productId: { type: String }, // Example: 'JSMK12345'
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     sizes: [{ type: String, required: true }], // Example: ['M', 'L', 'XL', 'XXL']
-    fitType: { type: String, required: true }, // Example: 'Regular Fit'
-    colors: [{ type: String, required: true }], // Example: ['Navy Blue', 'Cream', 'Black']
+    fitType: { type: String }, // Example: 'Regular Fit'
+    colors: [{ type: String }], // Example: ['Navy Blue', 'Cream', 'Black']
     material: { type: String }, // Example: 'Cotton Lawn'
     price: { type: Number, required: true }, // Example: 3500.00
     measurements: {
