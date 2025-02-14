@@ -128,12 +128,12 @@ const registerBrand = async (req, res) => {
 // **Login (For both User & Brand)**
 const login = async (req, res) => {
     try {
-        const { identifier, password, isSeller } = req.body; // identifier = email or username
+        const { loginIdentifier, password, isSeller = false } = req.body; // loginIdentifier = email or username || default login type: user
         const role = isSeller ? 'brand' : 'user';
 
         // Find user by email or username and role
         const user = await User.findOne({
-            $or: [{ email: identifier }, { username: identifier }],
+            $or: [{ email: loginIdentifier }, { username: loginIdentifier }],
             role
         });
 
