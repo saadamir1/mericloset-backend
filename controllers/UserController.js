@@ -163,14 +163,40 @@ const updateUser = async (req, res) => {
         const { userId } = req.params;
         const { role, profileData, brandData } = req.body;
 
-        let updatedUser;
+        let updateFields = {};
+
         if (role === 'user') {
-            updatedUser = await User.findByIdAndUpdate(userId, { $set: { userProfile: profileData } }, { new: true });
+            updateFields.userProfile = profileData;
         } else if (role === 'brand') {
-            updatedUser = await User.findByIdAndUpdate(userId, { $set: { brandProfile: brandData } }, { new: true });
+            updateFields.brandProfile = brandData;
         } else {
             return res.status(400).json({ message: "Invalid role" });
         }
+
+        // ✅ Extract email & username based on role
+        const newEmail = role === 'user' ? profileData?.email : brandData?.email;
+        const newUsername = role === 'user' ? profileData?.username : brandData?.username;
+
+        // ✅ Check if email or username is already taken
+        if (newEmail || newUsername) {
+            const existingUser = await User.findOne({
+                $or: [{ email: newEmail }, { username: newUsername }],
+                _id: { $ne: userId } // Exclude the current user
+            });
+
+            if (existingUser) {
+                if (existingUser.email === newEmail && existingUser.username === newUsername) {
+                    return res.status(400).json({ message: "Both email and username are already in use" });
+                } else if (existingUser.email === newEmail) {
+                    return res.status(400).json({ message: "Email is already in use" });
+                } else if (existingUser.username === newUsername) {
+                    return res.status(400).json({ message: "Username is already in use" });
+                }
+            }
+        }
+
+        // ✅ Update user profile based on role
+        const updatedUser = await User.findByIdAndUpdate(userId, { $set: updateFields }, { new: true });
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
@@ -182,6 +208,7 @@ const updateUser = async (req, res) => {
         res.status(500).json({ message: "Profile update failed", error: error.message });
     }
 };
+
 
 // **Delete User/Brand**
 const deleteUser = async (req, res) => {
