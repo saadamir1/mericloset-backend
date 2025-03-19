@@ -1,6 +1,5 @@
 const Tracking = require('../models/Tracking');
 
-
 // Create a new tracking record
 const createTracking = async (req, res) => {
     const { userId, productId, actionType } = req.body;
@@ -68,7 +67,6 @@ const updateTracking = async (req, res) => {
         res.status(500).json({ message: 'Error updating tracking record' });
     }
 };
-
 
 // Delete a tracking record
 const deleteTracking = async (req, res) => {
