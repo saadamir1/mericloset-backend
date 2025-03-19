@@ -10,6 +10,7 @@ const uploadRoutes = require('./uploadRoutes');
 const categoryRoutes = require('./categoryRoutes');
 const adminRoutes = require('./adminRoutes');
 const favoriteRoutes = require('./favoriteRoutes');
+const chatbotRoutes = require('./chatbotroutes'); 
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/categories', categoryRoutes);
 router.use('/admin', adminRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/favorites', favoriteRoutes);
+router.use('/chat', chatbotRoutes);
 
 module.exports = router;
