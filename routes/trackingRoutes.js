@@ -6,7 +6,7 @@ const {
     getTrackingById,
     updateTracking,
     deleteTracking
-} = require('../controllers/trackingController');
+} = require('../controllers/TrackingController');
 
 // Tracking routes
 router.post('/', createTracking); // Create a new tracking record
