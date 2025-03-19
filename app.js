@@ -37,6 +37,11 @@ app.use(api, routes);
 // Error handler (should be last middleware)
 app.use(errorHandler);
 
+app.get('/', (req, res) => {
+    res.send('🎉 MeriCloset backend is live and connected!');
+  });
+
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
