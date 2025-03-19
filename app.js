@@ -7,39 +7,37 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const errorHandler = require('./middleware/errorHandler');
 const routes = require('./routes/index');
-const authJwt = require('./helpers/jwt')
-const errorhandler = require('./helpers/error-handler')
-const corsOrigin = process.env.CORS_ORIGIN
+const authJwt = require('./helpers/jwt');
+const errorhandler = require('./helpers/error-handler');
+
+// Use environment variables
+const corsOrigin = process.env.CORS_ORIGIN;
+const api = process.env.API_URL;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors({ origin: corsOrigin })); // only allow API requests from our frontend's specific port
+app.use(cors({ origin: corsOrigin }));
 app.use(bodyParser.json());
 app.use(morgan('tiny'));
-//app.use(authJwt());
+// app.use(authJwt());
 app.use(errorhandler);
 
-// Other middlewares for handling form submissions
+// Other middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const api = process.env.API_URL;
-const PORT = process.env.PORT;
-
 // Connect to MongoDB
 mongoose.connect(process.env.CONNECTION_STRING)
-    .then(() => console.log("Database connection successful!"))
-    .catch((err) => console.log(err));
+  .then(() => console.log("Database connection successful!"))
+  .catch((err) => console.log(err));
 
-// Use the routes with the base API path
+// Routes
 app.use(api, routes);
 
-// Error handling middleware
+// Error handler (should be last middleware)
 app.use(errorHandler);
 
+// Start the server
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-
-
-
