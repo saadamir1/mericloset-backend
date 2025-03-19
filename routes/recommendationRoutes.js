@@ -6,7 +6,7 @@ const {
     getRecommendationById,
     updateRecommendation,
     deleteRecommendation
-} = require('../controllers/recommendationController');
+} = require('../controllers/RecommendationController');
 
 // Recommendation routes
 router.post('/', createRecommendation); // Create a new recommendation
