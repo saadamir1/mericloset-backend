@@ -5,11 +5,13 @@ const {
     getUserTracking,
     getTrackingById,
     updateTracking,
-    deleteTracking
+    deleteTracking,
+    recommendProducts
 } = require('../controllers/TrackingController');
 
-const Tracking = require('../models/Tracking'); // Import Tracking model
+const Tracking = require('../models/Tracking');
 
+// Get all tracking records
 router.get('/', async (req, res) => {
     try {
         const trackingRecords = await Tracking.find().populate('user product');
@@ -20,11 +22,32 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Existing routes
-router.post('/', createTracking); // Create a new tracking record
-router.get('/user/:userId', getUserTracking); // Get all tracking records for a user
-router.get('/:trackingId', getTrackingById); // Get tracking record by ID
-router.put('/:trackingId', updateTracking); // Update tracking record
-router.delete('/:trackingId', deleteTracking); // Delete tracking record
+// Create a new tracking record
+router.post('/', createTracking);
+
+// Get tracking records for a specific user
+router.get('/user/:userId', getUserTracking);
+
+// Get a specific tracking record
+router.get('/:trackingId', getTrackingById);
+
+// Update a tracking record
+router.put('/:trackingId', updateTracking);
+
+// Delete a tracking record
+router.delete('/:trackingId', deleteTracking);
+
+// Get product recommendations
+router.get('/recommendations/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const recommendedProducts = await recommendProducts(userId);
+        res.status(200).json(recommendedProducts);
+    } catch (error) {
+        console.error('Error fetching recommendations:', error.message);
+        res.status(500).json({ message: 'Error fetching recommendations' });
+    }
+});
 
 module.exports = router;
