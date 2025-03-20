@@ -35,7 +35,7 @@ const getAllProducts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 36;
     const skip = (page - 1) * limit;
-    const { categoryID, brandID, sortOrder, minPrice, maxPrice } = req.query; // Accepting more filter params (like minPrice, maxPrice)
+    const { categoryID, brandID, ordering: sortOrder, minPrice, maxPrice } = req.query; // Accepting more filter params (like minPrice, maxPrice)
     console.log("Request Query Params:", req.query);
 
     // Build the filter object dynamically
