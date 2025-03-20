@@ -1,69 +1,72 @@
 const Favorite = require('../models/Favorite');
 const Product = require('../models/Product');
 
-// @desc Add a product to favorites
-// @route POST /api/favorites/add
-// @access Private
+
 exports.addFavorite = async (req, res) => {
-    try {
-        const { productId, userId } = req.body;
+  const { productId, userId } = req.body;
 
-        if (!productId || !userId) {
-            return res.status(400).json({ message: "Product ID and User ID are required" });
-        }
+  if (!productId || !userId) {
+    return res.status(400).json({ message: "Product ID and User ID are required" });
+  }
 
-        const existingFavorite = await Favorite.findOne({ user: userId, product: productId });
-
-        if (existingFavorite) {
-            return res.status(200).json({ message: "Already in favorites", favorite: existingFavorite });
-        }
-
-        const favorite = new Favorite({ user: userId, product: productId });
-        await favorite.save();
-
-        res.status(201).json({ message: "Added to favorites", favorite });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+  try {
+    
+    const productExists = await Product.findById(productId);
+    if (!productExists) {
+      return res.status(404).json({ message: "Product not found" });
     }
+
+    const existingFavorite = await Favorite.findOne({ user: userId, product: productId });
+    if (existingFavorite) {
+      return res.status(200).json({ message: "Already in favorites", favorite: existingFavorite });
+    }
+
+    const favorite = new Favorite({ user: userId, product: productId });
+    await favorite.save();
+
+    return res.status(201).json({ message: "Added to favorites", favorite });
+  } catch (error) {
+    console.error("Error adding to favorites:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
-// @desc Remove a product from favorites
-// @route DELETE /api/favorites/remove/:productId/:userId
-// @access Private
+
 exports.removeFavorite = async (req, res) => {
-    try {
-        const { productId, userId } = req.params;
+  const { productId, userId } = req.params;
 
-        if (!productId || !userId) {
-            return res.status(400).json({ message: "Product ID and User ID are required" });
-        }
+  if (!productId || !userId) {
+    return res.status(400).json({ message: "Product ID and User ID are required" });
+  }
 
-        const favorite = await Favorite.findOneAndDelete({ user: userId, product: productId });
+  try {
+    const removed = await Favorite.findOneAndDelete({ user: userId, product: productId });
 
-        if (!favorite) {
-            return res.status(404).json({ message: "Product not found in favorites" });
-        }
-
-        res.status(200).json({ message: "Removed from favorites" });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+    if (!removed) {
+      return res.status(404).json({ message: "Product not found in favorites" });
     }
+
+    return res.status(200).json({ message: "Removed from favorites" });
+  } catch (error) {
+    console.error("Error removing from favorites:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
-// @desc Get all favorite products of a user
-// @route GET /api/favorites/user/:userId
-// @access Private
+
 exports.getUserFavorites = async (req, res) => {
-    try {
-        const { userId } = req.params;
+  const { userId } = req.params;
 
-        if (!userId) {
-            return res.status(400).json({ message: "User ID is required" });
-        }
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
 
-        const favorites = await Favorite.find({ user: userId }).populate("product");
-        res.status(200).json(favorites);
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
+  try {
+    const favorites = await Favorite.find({ user: userId }).populate("product");
+
+    return res.status(200).json(favorites);
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
