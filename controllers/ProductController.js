@@ -35,30 +35,48 @@ const getAllProducts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 36;
     const skip = (page - 1) * limit;
-    const { categoryID, brandID, sortOrder, minPrice, maxPrice } = req.query; // Accepting more filter params (like minPrice, maxPrice)
+    const { categoryID, brandID, ordering: sortOrder, minPrice, maxPrice, search } = req.query;
     console.log("Request Query Params:", req.query);
 
     // Build the filter object dynamically
     let filter = {};
+    let originalFilter = {}; // Store original filter for later use
 
     if (categoryID) {
-        filter.category = categoryID;  // Filter by category if present
+        filter.category = categoryID;
+        originalFilter.category = categoryID;
     }
 
     if (brandID) {
-        filter.brand = brandID;  // Filter by brand if present
+        filter.brand = brandID;
+        originalFilter.brand = brandID;
     }
 
-    // Adding price filters (if minPrice and maxPrice are provided)
+    if (search) {
+        // Create a more flexible search pattern
+        const searchRegex = new RegExp(search.split(/\s+/).join('|'), 'i');
+        
+        // Search across multiple fields
+        filter.$or = [
+            { title: searchRegex },
+            { description: searchRegex },
+            { brand: searchRegex },
+            { tags: searchRegex }
+        ];
+    }
+
+    // Adding price filters
     if (minPrice && maxPrice) {
-        filter.price = { $gte: minPrice, $lte: maxPrice };  // Price range filter
+        filter.price = { $gte: minPrice, $lte: maxPrice };
+        originalFilter.price = { $gte: minPrice, $lte: maxPrice };
     } else if (minPrice) {
-        filter.price = { $gte: minPrice };  // Only minimum price filter
+        filter.price = { $gte: minPrice };
+        originalFilter.price = { $gte: minPrice };
     } else if (maxPrice) {
-        filter.price = { $lte: maxPrice };  // Only maximum price filter
+        filter.price = { $lte: maxPrice };
+        originalFilter.price = { $lte: maxPrice };
     }
 
-    // Log the filter object to check.
     console.log("Filter:", filter);
 
     // Default sort is by relevance, handle other sorting options
@@ -80,7 +98,7 @@ const getAllProducts = async (req, res) => {
             sort = { addedDate: -1 }; // Sort by date added, descending
             break;
         case "-metacritic":
-            sort = { popularity: -1 }; // Sort by popularity (metacritic score)
+            sort = { popularity: -1 }; // Sort by popularity
             break;
         case "-rating":
             sort = { rating: -1 }; // Sort by average rating, descending
@@ -93,24 +111,48 @@ const getAllProducts = async (req, res) => {
     console.log("Sort:", sort);
 
     try {
-        const totalCount = await Product.countDocuments(filter);  // Apply filter to count
-        const products = await Product.find(filter)  // Apply filter to query
+        // First, try to get filtered results
+        const totalCount = await Product.countDocuments(filter);
+        
+        // If there are enough results, return them
+        if (totalCount >= 3) { // You can adjust this minimum threshold
+            const products = await Product.find(filter)
+                .skip(skip)
+                .limit(limit)
+                .sort(sort);
+
+            return res.status(200).json({
+                count: totalCount,
+                next: totalCount > page * limit ? `/api/v1/products?page=${page + 1}&limit=${limit}` : null,
+                results: products,
+                isDefaultResults: false
+            });
+        }
+        
+        // If not enough results, return default products
+        // Keep only category and brand filters if they exist, but remove search
+        console.log("Insufficient results. Showing default products...");
+        
+        // Use original filter (without search) or an empty filter for defaults
+        const defaultFilter = Object.keys(originalFilter).length > 0 ? originalFilter : {};
+        
+        const defaultTotalCount = await Product.countDocuments(defaultFilter);
+        const defaultProducts = await Product.find(defaultFilter)
             .skip(skip)
             .limit(limit)
-            .sort(sort);  // Apply sorting
-
-        res.status(200).json({
-            count: totalCount,
-            next: totalCount > page * limit ? `/api/v1/products?page=${page + 1}&limit=${limit}` : null,
-            results: products,
+            .sort({ popularity: -1 }); // Sort by popularity for defaults
+        
+        return res.status(200).json({
+            count: defaultTotalCount,
+            next: defaultTotalCount > page * limit ? `/api/v1/products?page=${page + 1}&limit=${limit}` : null,
+            results: defaultProducts,
+            isDefaultResults: true // Flag to indicate these are default results
         });
     } catch (error) {
         console.error("Error fetching products:", error.message);
         res.status(500).json({ message: "Error fetching products" });
     }
 };
-
-
 
 // Get product by ID
 const getProductById = async (req, res) => {
