@@ -5,4 +5,5 @@ const FavoriteSchema = new mongoose.Schema({
   product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Favorite", FavoriteSchema);
+// Fix OverwriteModelError
+module.exports = mongoose.models.Favorite || mongoose.model("Favorite", FavoriteSchema);
