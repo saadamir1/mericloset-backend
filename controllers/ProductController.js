@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Favorite = require('../models/favorite'); 
 
 const processImages = (imageData) => {
   if (typeof imageData === 'string') {
@@ -9,6 +10,18 @@ const processImages = (imageData) => {
   }
   return imageData;
 };
+
+// Content-Based Recommendations Helper
+const getContentBasedRecommendations = async (product) => {
+  const similarProducts = await Product.find({
+    _id: { $ne: product._id },
+    brand: product.brand,
+    category: product.category
+  }).limit(10);
+
+  return similarProducts;
+};
+
 
 // CREATE
 const createProduct = async (req, res) => {
@@ -134,10 +147,81 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+
+const getHybridRecommendations = async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const favorites = await Favorite.find({ product: productId });
+    const userIds = favorites.map(fav => fav.user);
+
+    let collaborativeProducts = [];
+    if (userIds.length > 0) {
+      const otherFavorites = await Favorite.find({
+        user: { $in: userIds },
+        product: { $ne: productId }
+      });
+
+      let productCount = {};
+      otherFavorites.forEach(fav => {
+        const pid = fav.product.toString();
+        productCount[pid] = (productCount[pid] || 0) + 1;
+      });
+
+      const sortedCollaborativeIds = Object.keys(productCount).sort((a, b) => productCount[b] - productCount[a]);
+      collaborativeProducts = await Product.find({ _id: { $in: sortedCollaborativeIds.slice(0, 10) } });
+    }
+
+    const contentBasedProducts = await Product.find({
+      _id: { $ne: product._id },
+      brand: product.brand,
+      category: product.category
+    }).limit(10);
+
+    const scores = new Map();
+
+    for (const p of collaborativeProducts) {
+      scores.set(p._id.toString(), (scores.get(p._id.toString()) || 0) + 2);
+    }
+
+    for (const p of contentBasedProducts) {
+      scores.set(p._id.toString(), (scores.get(p._id.toString()) || 0) + 1);
+    }
+
+    const sortedIds = Array.from(scores.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(entry => entry[0]);
+
+    const finalProducts = await Product.find({ _id: { $in: sortedIds.slice(0, 5) } });
+
+    
+    const cleanedProducts = finalProducts.map(prod => ({
+      _id: prod._id,
+      title: prod.title,
+      price: prod.price,
+      images: prod.images,
+      slug: prod.slug,   
+    }));
+
+    res.status(200).json(cleanedProducts);
+  } catch (error) {
+    console.error('Error in hybrid recommendations:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+
+
+
 module.exports = {
   createProduct,
   getAllProducts,
   getProductById,
   updateProduct,
   deleteProduct,
+  getHybridRecommendations,
 };
