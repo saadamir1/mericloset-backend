@@ -12,6 +12,7 @@ const adminRoutes = require('./adminRoutes');
 const favoriteRoutes = require('./favoriteRoutes');
 const chatbotRoutes = require('./chatbotroutes');
 const imageUploadRoutes = require('./imageUploadRoutes');
+const stripeRoutes = require('./stripeRoutes'); 
 
 const router = express.Router();
 
@@ -28,5 +29,6 @@ router.use('/upload', uploadRoutes);
 router.use('/favorites', favoriteRoutes);
 router.use('/chat', chatbotRoutes);
 router.use('/images', imageUploadRoutes);
+router.use('/', stripeRoutes);   
 
 module.exports = router;
