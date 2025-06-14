@@ -1,5 +1,5 @@
 const Product = require('../models/Product');
-const Favorite = require('../models/favorite'); 
+const Favorite = require('../models/Favorite');
 
 const processImages = (imageData) => {
   if (typeof imageData === 'string') {
@@ -169,7 +169,7 @@ const getHybridRecommendations = async (req, res) => {
       }).populate('product');
 
       let categoryAwareProductCount = {};
-      
+
       otherFavorites.forEach(fav => {
         if (fav.product) {
           const pid = fav.product._id.toString();
@@ -185,7 +185,7 @@ const getHybridRecommendations = async (req, res) => {
       const sortedCollaborativeIds = Object.keys(categoryAwareProductCount)
         .sort((a, b) => categoryAwareProductCount[b] - categoryAwareProductCount[a])
         .slice(0, 4);
-      
+
       collaborativeProducts = await Product.find({ _id: { $in: sortedCollaborativeIds } });
     }
 
@@ -209,8 +209,8 @@ const getHybridRecommendations = async (req, res) => {
       Product.find({
         _id: { $ne: product._id },
         category: product.category,
-        price: { 
-          $gte: product.price - (product.price * 0.4), 
+        price: {
+          $gte: product.price - (product.price * 0.4),
           $lte: product.price + (product.price * 0.4)
         }
       }).limit(6),
@@ -238,7 +238,7 @@ const getHybridRecommendations = async (req, res) => {
 
     // 3. ENHANCED HYBRID SCORING WITH BETTER WEIGHTS
     const scores = new Map();
-    
+
     // Helper function to add score with diminishing returns for same products
     const addScore = (productArray, weight) => {
       productArray.forEach((p, index) => {
@@ -246,9 +246,9 @@ const getHybridRecommendations = async (req, res) => {
         const currentScore = scores.get(productId) || 0;
         const positionPenalty = Math.max(0.3, 1 - (index * 0.1));
         const finalWeight = weight * positionPenalty;
-        
+
         scores.set(productId, currentScore + finalWeight);
-        
+
         // Add small bonus for category relevance if it matches exactly
         if (p.category === product.category) {
           scores.set(productId, scores.get(productId) + 0.5);
@@ -266,24 +266,24 @@ const getHybridRecommendations = async (req, res) => {
     addScore(randomSameCategory, 1);
 
     // 4. ENHANCED DIVERSITY BOOST WITH CATEGORY RELEVANCE
-    const allProducts = [...sameBrandCategory, ...sameCategoryDiffBrand, ...similarPriceProducts, 
-                        ...collaborativeProducts, ...sameBrandDiffCategory, ...popularInCategory, ...randomSameCategory];
-    
+    const allProducts = [...sameBrandCategory, ...sameCategoryDiffBrand, ...similarPriceProducts,
+    ...collaborativeProducts, ...sameBrandDiffCategory, ...popularInCategory, ...randomSameCategory];
+
     scores.forEach((score, productId) => {
       const productData = allProducts.find(p => p._id.toString() === productId);
-      
+
       if (productData) {
         // Give significant boost to same category products
         if (productData.category === product.category) {
           scores.set(productId, score + 2);
         }
-        
+
         // Reduce score for products that are too popular across all categories
         if (productData.popularityIndex && productData.popularityIndex > 8) {
           scores.set(productId, score * 0.8);
         }
       }
-      
+
       // Larger random factor for more variety
       scores.set(productId, scores.get(productId) + Math.random() * 0.5);
     });
@@ -304,7 +304,7 @@ const getHybridRecommendations = async (req, res) => {
 
       for (let i = 0; i < Math.min(imageUrls.length, 3); i += 3) {
         const batch = imageUrls.slice(i, i + 3);
-        
+
         const batchPromises = batch.map(async (url) => {
           try {
             const cleanUrl = url.trim();
@@ -356,41 +356,41 @@ const getHybridRecommendations = async (req, res) => {
     const diversifiedProducts = [];
     const brandCount = {};
     const categoryCount = {};
-    
+
     // Sort validProducts by their scores first
     const validProductsWithScores = validProducts
       .map(p => ({ product: p, score: scores.get(p._id.toString()) || 0 }))
       .sort((a, b) => b.score - a.score);
-    
+
     // Apply diversification rules
     for (const { product: prod } of validProductsWithScores) {
       const brandKey = prod.brand;
       const categoryKey = prod.category;
-      
+
       brandCount[brandKey] = brandCount[brandKey] || 0;
       categoryCount[categoryKey] = categoryCount[categoryKey] || 0;
-      
+
       const isSameCategory = prod.category === product.category;
       const maxSameCategory = 9;
       const maxPerBrand = 3;
-      
+
       const shouldAdd = (
         brandCount[brandKey] < maxPerBrand &&
         (isSameCategory ? categoryCount[categoryKey] < maxSameCategory : categoryCount[categoryKey] < 3)
       );
-      
+
       if (shouldAdd) {
         diversifiedProducts.push(prod);
         brandCount[brandKey]++;
         categoryCount[categoryKey]++;
       }
-      
+
       if (diversifiedProducts.length >= 12) break;
     }
 
     // Fill remaining slots if needed
     if (diversifiedProducts.length < 12) {
-      const remainingProducts = validProducts.filter(p => 
+      const remainingProducts = validProducts.filter(p =>
         !diversifiedProducts.some(dp => dp._id.toString() === p._id.toString())
       );
       diversifiedProducts.push(...remainingProducts.slice(0, 12 - diversifiedProducts.length));
@@ -414,7 +414,7 @@ const getHybridRecommendations = async (req, res) => {
 
     console.log(`SUCCESS: Returning ${cleanedProducts.length} recommendations`);
     res.status(200).json(cleanedProducts);
-    
+
   } catch (error) {
     console.error('Error in hybrid recommendations:', error);
     res.status(500).json({ message: 'Server Error' });
