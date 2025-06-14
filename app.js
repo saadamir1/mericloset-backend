@@ -25,7 +25,7 @@ const api = process.env.API_URL || '/api/v1';
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors({ origin: corsOrigin }));
+//app.use(cors({ origin: corsOrigin }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
