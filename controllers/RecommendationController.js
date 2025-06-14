@@ -14,13 +14,44 @@ const createRecommendation = async (req, res) => {
     }
 };
 
-// Get all recommendations for a user
+// Get paginated recommendations for a user
 const getUserRecommendations = async (req, res) => {
     const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     try {
-        const recommendations = await Recommendation.find({ user: userId }).populate('recommendedProducts');
-        res.status(200).json(recommendations);
+        const recommendation = await Recommendation.findOne({ user: userId });
+
+        if (!recommendation) {
+            return res.status(404).json({ message: 'No recommendations found for this user.' });
+        }
+
+        const uniqueSortedIds = [...new Set(recommendation.recommendedProducts.map(id => id.toString()).sort())];
+        const total = uniqueSortedIds.length;
+        const slicedProductIds = uniqueSortedIds.slice(skip, skip + limit);
+
+        console.log("== BACKEND PAGINATION DEBUG ==");
+        console.log("User ID:", userId);
+        console.log("Page:", page);
+        console.log("Limit:", limit);
+        console.log("Skip:", skip);
+        console.log("Total unique products:", total);
+        console.log("Sliced Product IDs for this page:", slicedProductIds);
+        console.log("================================");
+
+        const products = await Product.find({ _id: { $in: slicedProductIds } });
+        const orderedProducts = slicedProductIds.map(
+          id => products.find(p => p._id.toString() === id)
+        ).filter(Boolean);
+
+        res.status(200).json({
+            products: orderedProducts,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (error) {
         console.error('Error fetching recommendations:', error);
         res.status(500).json({ message: 'Error fetching recommendations' });
