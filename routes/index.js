@@ -1,4 +1,5 @@
 const express = require('express');
+
 const userRoutes = require('./userRoutes');
 const productRoutes = require('./productRoutes');
 const brandRoutes = require('./brandRoutes');
@@ -12,10 +13,12 @@ const adminRoutes = require('./adminRoutes');
 const favoriteRoutes = require('./favoriteRoutes');
 const chatbotRoutes = require('./chatbotroutes');
 const imageUploadRoutes = require('./imageUploadRoutes');
-const stripeRoutes = require('./stripeRoutes'); 
+const stripeRoutes = require('./stripeRoutes');
+const feedbackRoutes = require('./feedbackRoutes'); 
 
 const router = express.Router();
 
+// Route Configuration
 router.use('/users', userRoutes);
 router.use('/products', productRoutes);
 router.use('/brands', brandRoutes);
@@ -29,6 +32,7 @@ router.use('/upload', uploadRoutes);
 router.use('/favorites', favoriteRoutes);
 router.use('/chat', chatbotRoutes);
 router.use('/images', imageUploadRoutes);
-router.use('/', stripeRoutes);   
+router.use('/feedback', feedbackRoutes); 
+router.use('/', stripeRoutes);
 
 module.exports = router;
