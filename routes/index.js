@@ -15,6 +15,7 @@ const chatbotRoutes = require('./chatbotroutes');
 const imageUploadRoutes = require('./imageUploadRoutes');
 const stripeRoutes = require('./stripeRoutes');
 const feedbackRoutes = require('./feedbackRoutes'); 
+const feedbackProductsRoutes = require('./feedbackProductsRoutes'); 
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.use('/favorites', favoriteRoutes);
 router.use('/chat', chatbotRoutes);
 router.use('/images', imageUploadRoutes);
 router.use('/feedback', feedbackRoutes); 
+router.use('/feedback-products', feedbackProductsRoutes); 
 router.use('/', stripeRoutes);
 
 module.exports = router;
