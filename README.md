@@ -12,7 +12,8 @@ A robust Node.js backend API for MeriCloset - a personalized fashion platform th
 - **Admin Dashboard**: Analytics and platform management
 - **File Upload**: Image upload and management system
 - **Feedback System**: Product reviews and ratings
-- **Closet Management**: Personal wardrobe organization
+- **Closet Management**: Personal wardrobe organization (backend API only)
+- **AI Chatbot**: Gemini API integration for intelligent product assistance
 - **Tracking System**: User activity and behavior tracking
 
 ## 🛠️ Tech Stack
@@ -66,6 +67,9 @@ A robust Node.js backend API for MeriCloset - a personalized fashion platform th
    # Stripe
    STRIPE_SECRET_KEY=your_stripe_secret_key
    STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+   
+   # AI Chatbot
+   GEMINI_API_KEY=your_gemini_api_key
    
    # File Upload
    UPLOAD_PATH=./uploads
@@ -171,13 +175,38 @@ A robust Node.js backend API for MeriCloset - a personalized fashion platform th
 - `GET /api/v1/categories` - Get all categories
 - `POST /api/v1/categories` - Create category (Admin)
 
+### Closets & Personal Wardrobe (Backend Only)
+- `GET /api/v1/closets/:userId` - Get user closets
+- `POST /api/v1/closets` - Create new closet
+- `PUT /api/v1/closets/:closetId` - Update closet
+- `DELETE /api/v1/closets/:closetId` - Delete closet
+- `POST /api/v1/closet-items/:closetId/items` - Add item to closet
+- `GET /api/v1/closet-items/:closetId/items` - Get closet items
+- `DELETE /api/v1/closet-items/:closetId/items/:itemId` - Remove item from closet
+
+### Favorites
+- `GET /api/v1/favorites` - Get user favorites
+- `POST /api/v1/favorites` - Add to favorites
+- `DELETE /api/v1/favorites/:id` - Remove from favorites
+
 ### Recommendations
-- `GET /api/v1/recommendations/:userId` - Get personalized recommendations
+- `GET /api/v1/recommendations/user/:userId` - Get personalized recommendations
 - `POST /api/v1/recommendations/track` - Track user interactions
+
+### Feedback & Reviews
+- `GET /api/v1/feedback` - Get product feedback
+- `POST /api/v1/feedback` - Submit product review
+- `GET /api/v1/feedback-products/:productId` - Get product-specific reviews
+
+### Tracking & Analytics
+- `POST /api/v1/tracking` - Track user behavior and interactions
 
 ### Orders & Payments
 - `POST /stripe/create-checkout-session` - Create Stripe checkout
 - `POST /cash-order` - Create cash on delivery order
+
+### AI Chatbot
+- `POST /chatbot` - Get AI-powered product recommendations
 
 ### File Upload
 - `POST /api/v1/upload` - Upload images
